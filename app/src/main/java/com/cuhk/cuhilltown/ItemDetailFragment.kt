@@ -11,6 +11,9 @@ import android.os.Bundle
 import android.support.annotation.AnyRes
 import android.support.v4.app.Fragment
 import android.view.*
+import android.view.View.GONE
+import android.view.View.VISIBLE
+import android.widget.ImageView
 import android.widget.MediaController
 import android.widget.VideoView
 import kotlinx.android.synthetic.main.activity_item_detail.*
@@ -30,6 +33,7 @@ class ItemDetailFragment : Fragment(), SensorEventListener {
     private lateinit var rootView: View
     private lateinit var videoView: VideoView
     private lateinit var mediaCtrl: MediaController
+    private lateinit var overlayView: ImageView
 
     private lateinit var sensorManager: SensorManager
     private lateinit var windowManager: WindowManager
@@ -64,9 +68,9 @@ class ItemDetailFragment : Fragment(), SensorEventListener {
         rootView = inflater.inflate(R.layout.item_detail, container, false)
         videoView = rootView.my_video
         mediaCtrl = MediaController(rootView.context)
+        overlayView = rootView.playback_overlay
 
         // Video
-        rootView.item_detail.text = item.videoUrl
         mediaCtrl.setAnchorView(videoView)
         videoView.setMediaController(mediaCtrl)
 
@@ -153,12 +157,27 @@ class ItemDetailFragment : Fragment(), SensorEventListener {
 
         if (Math.abs(roll) < 60 && Math.abs(pitch) < 10) {
             videoView.start()
+            mediaCtrl.visibility = VISIBLE
+
+            overlayView.visibility = GONE
         } else if (Math.abs(roll) > 60) {
-            if (videoView.isPlaying) videoView.pause()
+            videoView.pause()
+            mediaCtrl.visibility = GONE
+
+            overlayView.visibility = VISIBLE
+            overlayView.setImageResource(R.drawable.pause)
         } else if (pitch < -10) {
             videoView.seekTo(videoView.currentPosition - 2000)
+            mediaCtrl.visibility = GONE
+
+            overlayView.visibility = VISIBLE
+            overlayView.setImageResource(R.drawable.rewind)
         } else if (pitch > 10) {
             videoView.seekTo(videoView.currentPosition + 2000)
+            mediaCtrl.visibility = GONE
+
+            overlayView.visibility = VISIBLE
+            overlayView.setImageResource(R.drawable.forward)
         }
 
         println("$azimuth, $pitch, $roll, ${this.windowManager.defaultDisplay.rotation}")
