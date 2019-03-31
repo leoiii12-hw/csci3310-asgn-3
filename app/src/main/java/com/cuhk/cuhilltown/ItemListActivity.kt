@@ -4,13 +4,12 @@ import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.RecyclerView
-import android.support.design.widget.Snackbar
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 
-import com.cuhk.cuhilltown.dummy.DummyContent
 import kotlinx.android.synthetic.main.activity_item_list.*
 import kotlinx.android.synthetic.main.item_list_content.view.*
 import kotlinx.android.synthetic.main.item_list.*
@@ -50,12 +49,41 @@ class ItemListActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView(recyclerView: RecyclerView) {
-        recyclerView.adapter = SimpleItemRecyclerViewAdapter(this, DummyContent.ITEMS, twoPane)
+        val items = listOf(
+            Item(
+                R.drawable.soaring_over_cuhk,
+                "Soaring CUHK",
+                "",
+                R.raw.soaring_cuhk
+            ),
+            Item(
+                R.drawable.humble_cottage,
+                "Humble Cottage",
+                "http://course.cse.cuhk.edu.hk/~csci3310/1819R2/asg3/humble_cottage_cuhk.mp4"
+            ),
+            Item(
+                R.drawable.green_map,
+                "Green Building Awards",
+                "http://course.cse.cuhk.edu.hk/~csci3310/1819R2/asg3/green_bldg_cuhk.mp4"
+            ),
+            Item(
+                R.drawable.connecting_the_space,
+                "Space and Earth",
+                "http://course.cse.cuhk.edu.hk/~csci3310/1819R2/asg3/connecting_space_cuhk.mp4"
+            ),
+            Item(
+                R.drawable.ir_cu,
+                "InfraRed Spots",
+                "http://course.cse.cuhk.edu.hk/~csci3310/1819R2/asg3/infrared_cuhk.mp4"
+            )
+        )
+
+        recyclerView.adapter = SimpleItemRecyclerViewAdapter(this, items, twoPane)
     }
 
     class SimpleItemRecyclerViewAdapter(
         private val parentActivity: ItemListActivity,
-        private val values: List<DummyContent.DummyItem>,
+        private val values: List<Item>,
         private val twoPane: Boolean
     ) :
         RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder>() {
@@ -64,11 +92,14 @@ class ItemListActivity : AppCompatActivity() {
 
         init {
             onClickListener = View.OnClickListener { v ->
-                val item = v.tag as DummyContent.DummyItem
+                val item = v.tag as Item
                 if (twoPane) {
                     val fragment = ItemDetailFragment().apply {
                         arguments = Bundle().apply {
-                            putString(ItemDetailFragment.ARG_ITEM_ID, item.id)
+                            putInt(ItemDetailFragment.ARG_ITEM_DRAWABLE, item.drawable)
+                            putString(ItemDetailFragment.ARG_ITEM_TITLE, item.title)
+                            putString(ItemDetailFragment.ARG_ITEM_VIDEO_URL, item.videoUrl)
+                            if (item.raw != null) putInt(ItemDetailFragment.ARG_ITEM_RAW, item.raw)
                         }
                     }
                     parentActivity.supportFragmentManager
@@ -77,7 +108,10 @@ class ItemListActivity : AppCompatActivity() {
                         .commit()
                 } else {
                     val intent = Intent(v.context, ItemDetailActivity::class.java).apply {
-                        putExtra(ItemDetailFragment.ARG_ITEM_ID, item.id)
+                        putExtra(ItemDetailFragment.ARG_ITEM_DRAWABLE, item.drawable)
+                        putExtra(ItemDetailFragment.ARG_ITEM_TITLE, item.title)
+                        putExtra(ItemDetailFragment.ARG_ITEM_VIDEO_URL, item.videoUrl)
+                        if (item.raw != null) putExtra(ItemDetailFragment.ARG_ITEM_RAW, item.raw)
                     }
                     v.context.startActivity(intent)
                 }
@@ -92,9 +126,8 @@ class ItemListActivity : AppCompatActivity() {
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val item = values[position]
-            holder.thumbnailView.text = "Hello World"
-            holder.idView.text = item.id
-            holder.contentView.text = item.content
+            holder.thumbnailView.setImageResource(item.drawable)
+            holder.contentView.text = item.title
 
             with(holder.itemView) {
                 tag = item
@@ -105,8 +138,7 @@ class ItemListActivity : AppCompatActivity() {
         override fun getItemCount() = values.size
 
         inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-            val thumbnailView: TextView = view.thumbnail
-            val idView: TextView = view.id_text
+            val thumbnailView: ImageView = view.thumbnail
             val contentView: TextView = view.content
         }
     }

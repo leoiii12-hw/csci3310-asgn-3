@@ -20,11 +20,6 @@ class ItemDetailActivity : AppCompatActivity() {
         setContentView(R.layout.activity_item_detail)
         setSupportActionBar(detail_toolbar)
 
-        fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own detail action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
-        }
-
         // Show the Up button in the action bar.
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
@@ -42,9 +37,24 @@ class ItemDetailActivity : AppCompatActivity() {
             // using a fragment transaction.
             val fragment = ItemDetailFragment().apply {
                 arguments = Bundle().apply {
+                    putInt(
+                        ItemDetailFragment.ARG_ITEM_DRAWABLE,
+                        intent.getIntExtra(ItemDetailFragment.ARG_ITEM_DRAWABLE, 0)
+                    )
+
                     putString(
-                        ItemDetailFragment.ARG_ITEM_ID,
-                        intent.getStringExtra(ItemDetailFragment.ARG_ITEM_ID)
+                        ItemDetailFragment.ARG_ITEM_TITLE,
+                        intent.getStringExtra(ItemDetailFragment.ARG_ITEM_TITLE)
+                    )
+
+                    putString(
+                        ItemDetailFragment.ARG_ITEM_VIDEO_URL,
+                        intent.getStringExtra(ItemDetailFragment.ARG_ITEM_VIDEO_URL)
+                    )
+
+                    putInt(
+                        ItemDetailFragment.ARG_ITEM_RAW,
+                        intent.getIntExtra(ItemDetailFragment.ARG_ITEM_RAW, 0)
                     )
                 }
             }
