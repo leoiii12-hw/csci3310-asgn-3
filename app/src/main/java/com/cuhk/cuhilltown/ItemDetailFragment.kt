@@ -22,7 +22,7 @@ import kotlinx.android.synthetic.main.item_detail.view.*
  */
 class ItemDetailFragment : Fragment() {
 
-    private var item: Item? = null
+    private lateinit var item: Item
 
     private lateinit var rootView: View
     private lateinit var videoView: VideoView
@@ -31,15 +31,19 @@ class ItemDetailFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+
+
         arguments?.let {
             if (it.containsKey(ARG_ITEM_DRAWABLE)) {
                 // Load the dummy content specified by the fragment
                 // arguments. In a real-world scenario, use a Loader
                 // to load content from a content provider.
 
-                item = Item(it.getInt(ARG_ITEM_DRAWABLE), it.getString(ARG_ITEM_TITLE), it.getString(ARG_ITEM_VIDEO_URL), it.getInt(ARG_ITEM_RAW))
+                item = Item(it.getInt(ARG_ITEM_DRAWABLE), it.getString(ARG_ITEM_TITLE)!!, it.getString(ARG_ITEM_VIDEO_URL)!!, it.getInt(ARG_ITEM_RAW))
 
-                activity?.toolbar_layout?.title = item?.title
+                activity?.toolbar_layout?.title = item.title
+            } else {
+                throw NullPointerException();
             }
         }
     }
@@ -49,33 +53,28 @@ class ItemDetailFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         rootView = inflater.inflate(R.layout.item_detail, container, false)
+        videoView = rootView.my_video
+        mediaCtrl = MediaController(rootView.context)
 
-        // Show the dummy content as text in a TextView.
-        item?.let {
-            rootView.item_detail.text = item!!.videoUrl
+        rootView.item_detail.text = item.videoUrl
+        mediaCtrl.setAnchorView(videoView)
+        videoView.setMediaController(mediaCtrl)
 
-            videoView = rootView.my_video
-
-            mediaCtrl = MediaController(rootView.context)
-            mediaCtrl.setAnchorView(videoView)
-
-            videoView.setMediaController(mediaCtrl)
-
-            if (item!!.videoUrl == "") {
-                val uri = getUriFromDrawable(rootView.context, item!!.raw!!)
-                videoView.setVideoURI(uri)
-
-            } else {
-                videoView.setVideoURI(Uri.parse(item!!.videoUrl))
-            }
-
-            videoView.start()
+        if (item.videoUrl == "") {
+            val uri = getUriFromDrawable(rootView.context, item.raw!!)
+            videoView.setVideoURI(uri)
+        } else {
+            videoView.setVideoURI(Uri.parse(item.videoUrl))
         }
+
+        videoView.start()
+
+
 
         return rootView
     }
 
-    override fun onDestroyView(){
+    override fun onDestroyView() {
         this.videoView.stopPlayback()
 
         super.onDestroyView()
