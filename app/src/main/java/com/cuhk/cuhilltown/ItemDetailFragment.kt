@@ -18,7 +18,11 @@ import android.widget.MediaController
 import android.widget.VideoView
 import kotlinx.android.synthetic.main.activity_item_detail.*
 import kotlinx.android.synthetic.main.item_detail.view.*
+import android.view.ViewGroup
 
+
+private var lastPosition = 0
+private var lastItemTitle = ""
 
 /**
  * A fragment representing a single Item detail screen.
@@ -65,6 +69,7 @@ class ItemDetailFragment : Fragment(), SensorEventListener {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        println("onCreateView")
         rootView = inflater.inflate(R.layout.item_detail, container, false)
         videoView = rootView.my_video
         mediaCtrl = MediaController(rootView.context)
@@ -81,7 +86,22 @@ class ItemDetailFragment : Fragment(), SensorEventListener {
             videoView.setVideoURI(Uri.parse(item.videoUrl))
         }
 
+        if (item.title == lastItemTitle) {
+            println(lastPosition)
+            videoView.seekTo(lastPosition)
+        } else {
+            lastItemTitle = item.title
+        }
+
         videoView.start()
+
+        videoView.addOnLayoutChangeListener { v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
+            if (overlayView.layoutParams is ViewGroup.MarginLayoutParams) {
+                val p = overlayView.layoutParams as ViewGroup.MarginLayoutParams
+                p.setMargins(0, Math.round(videoView.height / 2.0 - (25.0 * rootView.context.resources.displayMetrics.density)).toInt(), 0, 0)
+                overlayView.requestLayout()
+            }
+        }
 
         // Sensor
         sensorManager = rootView.context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -111,17 +131,22 @@ class ItemDetailFragment : Fragment(), SensorEventListener {
         }
     }
 
-    override fun onDestroyView() {
-        this.videoView.stopPlayback()
-
-        super.onDestroyView()
-    }
-
     override fun onPause() {
-        this.videoView.pause()
+        println("onPause")
+
+        lastPosition = videoView.currentPosition
+
+        videoView.pause()
+        sensorManager.unregisterListener(this)
 
         super.onPause()
+    }
+
+    override fun onDestroyView() {
+        videoView.stopPlayback()
         sensorManager.unregisterListener(this)
+
+        super.onDestroyView()
     }
 
     override fun onSensorChanged(event: SensorEvent) {
@@ -180,7 +205,7 @@ class ItemDetailFragment : Fragment(), SensorEventListener {
             overlayView.setImageResource(R.drawable.forward)
         }
 
-        println("$azimuth, $pitch, $roll, ${this.windowManager.defaultDisplay.rotation}")
+        // println("$azimuth, $pitch, $roll, ${this.windowManager.defaultDisplay.rotation}")
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
