@@ -8,18 +8,16 @@
 
     <ImageView
             android:id="@+id/thumbnail"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight=".7"
+            android:layout_width="100dp"
+            android:layout_height="70dp"
             android:scaleType="fitXY"
             android:adjustViewBounds="true"
             tools:srcCompat="@tools:sample/avatars"/>
 
     <TextView
             android:id="@+id/content"
-            android:layout_width="30dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight=".3"
             android:scaleType="fitXY"
             android:adjustViewBounds="true"
             android:layout_marginLeft="8dp"

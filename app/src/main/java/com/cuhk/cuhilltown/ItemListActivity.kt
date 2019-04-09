@@ -1,7 +1,13 @@
 package com.cuhk.cuhilltown
 
+import android.app.Activity
+import android.content.ContentResolver
+import android.content.Context
 import android.content.Intent
+import android.media.MediaMetadataRetriever
+import android.net.Uri
 import android.os.Bundle
+import android.support.annotation.AnyRes
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
@@ -9,10 +15,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-
 import kotlinx.android.synthetic.main.activity_item_list.*
-import kotlinx.android.synthetic.main.item_list_content.view.*
 import kotlinx.android.synthetic.main.item_list.*
+import kotlinx.android.synthetic.main.item_list_content.view.*
+
 
 /**
  * An activity representing a list of Pings. This activity
@@ -91,6 +97,7 @@ class ItemListActivity : AppCompatActivity() {
         private val onClickListener: View.OnClickListener
 
         init {
+
             onClickListener = View.OnClickListener { v ->
                 val item = v.tag as Item
                 if (twoPane) {
@@ -126,13 +133,33 @@ class ItemListActivity : AppCompatActivity() {
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val item = values[position]
-            holder.thumbnailView.setImageResource(item.drawable)
+
             holder.contentView.text = item.title
 
             with(holder.itemView) {
                 tag = item
                 setOnClickListener(onClickListener)
             }
+
+            try {
+                val mediaMetadataRetriever = MediaMetadataRetriever()
+
+                if (item.videoUrl == "") {
+                    mediaMetadataRetriever.setDataSource(parentActivity as Activity, Uri.parse("android.resource://com.cuhk.cuhilltown/raw/soaring_cuhk"))
+                } else {
+                    mediaMetadataRetriever.setDataSource(item.videoUrl, HashMap())
+                }
+
+                val bitmap = mediaMetadataRetriever.frameAtTime
+
+                holder.thumbnailView.setImageBitmap(bitmap)
+
+                mediaMetadataRetriever.release()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
+
         }
 
         override fun getItemCount() = values.size
